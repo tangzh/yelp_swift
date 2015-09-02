@@ -8,8 +8,11 @@
 
 import UIKit
 
-class BusinessesViewController: UIViewController {
+class BusinessesViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 
+    @IBOutlet weak var tableView: UITableView!
+    
+    
     var businesses: [Business]!
     
     override func viewDidLoad() {
@@ -26,18 +29,36 @@ class BusinessesViewController: UIViewController {
         
         Business.searchWithTerm("Restaurants", sort: .Distance, categories: ["asianfusion", "burgers"], deals: true) { (businesses: [Business]!, error: NSError!) -> Void in
             self.businesses = businesses
-            
-            for business in businesses {
-                println(business.name!)
-                println(business.address!)
-            }
+            self.tableView.reloadData()
         }
+        
+        tableView.dataSource = self
+        tableView.delegate = self
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+    
+    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if let businesses = businesses {
+            return businesses.count
+        }else {
+            return 0
+        }
+    }
+    
+    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCellWithIdentifier("BusinessCell", forIndexPath: indexPath) as! BussinessCell
+        if let businesses = businesses {
+            let business = businesses[indexPath.row]
+            cell.business = business
+        }
+        
+        return cell
+    }
+    
 
     /*
     // MARK: - Navigation
