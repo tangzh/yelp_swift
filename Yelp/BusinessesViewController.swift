@@ -8,10 +8,9 @@
 
 import UIKit
 
-class BusinessesViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, FiltersViewControllerDelegate {
+class BusinessesViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, FiltersViewControllerDelegate, UISearchBarDelegate {
 
     @IBOutlet weak var tableView: UITableView!
-    
     
     var businesses: [Business]!
     
@@ -22,21 +21,43 @@ class BusinessesViewController: UIViewController, UITableViewDataSource, UITable
         tableView.delegate = self
         tableView.rowHeight = UITableViewAutomaticDimension
         tableView.estimatedRowHeight = 120
-
-//        Business.searchWithTerm("Thai", completion: { (businesses: [Business]!, error: NSError!) -> Void in
-//            self.businesses = businesses
-//            
-//            for business in businesses {
-//                println(business.name!)
-//                println(business.address!)
-//            }
-//        })
         
-        Business.searchWithTerm("Restaurants", sort: .Distance, categories: ["asianfusion", "burgers"], deals: true) { (businesses: [Business]!, error: NSError!) -> Void in
+        var searchBar = UISearchBar()
+        navigationItem.titleView = searchBar
+        searchBar.delegate = self
+            
+        Business.searchWithTerm("Restaurants", completion: { (businesses: [Business]!, error: NSError!) -> Void in
+            self.businesses = businesses
+            self.tableView.reloadData()
+        })
+        
+//        Business.searchWithTerm("Restaurants", sort: .Distance, categories: [], deals: true) { (businesses: [Business]!, error: NSError!) -> Void in
+//            self.businesses = businesses
+//            self.tableView.reloadData()
+//        }
+        
+    }
+    
+    func searchBarTextDidEndEditing(searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
+    }
+    
+    func searchBarSearchButtonClicked(searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
+    }
+    
+    func searchBar(searchBar: UISearchBar, textDidChange searchText: String) {
+        var searchTerm = ""
+        if searchText == "" {
+            searchTerm = "Restaurants"
+        }else {
+            searchTerm = searchText
+        }
+        
+        Business.searchWithTerm(searchTerm) { (businesses: [Business]!, error: NSError!) -> Void in
             self.businesses = businesses
             self.tableView.reloadData()
         }
-        
     }
 
     override func didReceiveMemoryWarning() {
@@ -68,8 +89,6 @@ class BusinessesViewController: UIViewController, UITableViewDataSource, UITable
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
         let nc = segue.destinationViewController as! UINavigationController
         let vc = nc.topViewController as! FiltersViewController
         
