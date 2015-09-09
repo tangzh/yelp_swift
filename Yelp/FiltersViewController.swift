@@ -21,6 +21,8 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
     var sortIndex: Int = 0
     var radiusIndex: Int = 0
     
+    var showAllCategories: Bool = false
+    var showedCategories: Int = 3
     var data:[(String,[String])] = [
         ("Sort",["Best Match", "Distance", "Highest Rate"]),
         ("Radius", ["0.3 miles", "1 miles", "5 miles", "20 miles"]),
@@ -65,6 +67,9 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
     }
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if section == 3 && !showAllCategories {
+            return showedCategories + 1
+        }
         return data[section].1.count
     }
     
@@ -74,7 +79,13 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier("SwitchCell", forIndexPath: indexPath) as! SwitchCell
-        cell.switchLabel.text = data[indexPath.section].1[indexPath.row]
+        if indexPath.section == 3 && !showAllCategories && indexPath.row == showedCategories{
+            cell.switchLabel.text = "Show All"
+            cell.onSwitch.hidden = true
+        }else {
+            cell.switchLabel.text = data[indexPath.section].1[indexPath.row]
+            cell.onSwitch.hidden = false
+        }
         cell.delegate = self
         
         if switchStates[indexPath.section] != nil {
@@ -88,6 +99,10 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
     }
     
     func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        if indexPath.section == 3 && !showAllCategories && indexPath.row == showedCategories {
+            showAllCategories = !showAllCategories
+            tableView.reloadData()
+        }
         tableView.deselectRowAtIndexPath(indexPath, animated:true)
     }
     
