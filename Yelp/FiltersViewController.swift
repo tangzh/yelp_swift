@@ -16,20 +16,32 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
 
     @IBOutlet var tableView: UITableView!
     var categories:[[String:String]]?
-    var switchStates = [Int:Bool]()
+    var switchStates = [Int:AnyObject]()
+    
+    var sortIndex: Int = 0
+    var radiusIndex: Int = 0
+    
+    var data:[(String,[String])] = [
+        ("Sort",["Best Match", "Distance", "Highest Rate"]),
+        ("Radius", ["0.3 miles", "1 miles", "5 miles", "20 miles"]),
+        ("Deals", ["Deals"]),
+        ("Categories", [])
+    ]
     
     weak var delegate: FiltersViewControllerDelegate?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         categories = getCategories()
+        data[3].1 = getCategoriesNames()
+        switchStates = getDefaultFilterStates()
+        
         tableView.dataSource = self
         tableView.delegate = self
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
     
     @IBAction func onCancelBtn(sender: AnyObject) {
@@ -40,33 +52,113 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
         dismissViewControllerAnimated(true, completion: nil)
         
         var filters = [String:AnyObject]()
+        filters["sort"] = getSortFilters()
+        filters["radius"] = getRadius()
+        filters["deals"] = getDeals()
         filters["categories"] = getCategoriesFilters()
         
         delegate?.filtersViewController?(self, didUpdate: filters)
     }
     
+    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+        return data.count
+    }
+    
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return categories?.count ?? 0
+        return data[section].1.count
+    }
+    
+    func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return data[section].0
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier("SwitchCell", forIndexPath: indexPath) as! SwitchCell
-        cell.switchLabel.text = categories![indexPath.row]["name"]
+        cell.switchLabel.text = data[indexPath.section].1[indexPath.row]
         cell.delegate = self
-        cell.onSwitch.on = switchStates[indexPath.row] ?? false
+        
+        if switchStates[indexPath.section] != nil {
+            let dic = switchStates[indexPath.section] as! [Int:Bool]
+            cell.onSwitch.on = dic[indexPath.row] ?? false
+        }else {
+            cell.onSwitch.on = false
+        }
+        
         return cell
     }
     
     func switchCell(switchCell: SwitchCell, didChangeValue value: Bool) {
         let indexPath = tableView.indexPathForCell(switchCell)
         if let indexPath = indexPath {
-            switchStates[indexPath.row] = value
+            
+            var dic = switchStates[indexPath.section] as! [Int:Bool]
+            dic[indexPath.row] = value
+            if (indexPath.section == 0 || indexPath.section == 1) {
+                switchStates[indexPath.section] = cleanDic(indexPath.row, dic: dic)
+                if indexPath.section == 0 {
+                    sortIndex = indexPath.row
+                }
+                if indexPath.section == 1 {
+                    radiusIndex = indexPath.row
+                }
+                tableView.reloadData()
+            }else {
+                switchStates[indexPath.section] = dic
+            }
         }
     }
     
-    func getCategoriesFilters() -> [String] {
+    private func cleanDic(key: Int, dic:[Int:Bool]) -> [Int:Bool] {
+        var result = [Int:Bool]()
+        for (k, v) in dic {
+            if (k != key) {
+                result[k] = false
+            }else {
+                result[k] = true
+            }
+        }
+        
+        return result
+    }
+    
+    private func getDefaultFilterStates() -> [Int:AnyObject] {
+        var filterStates:[Int:AnyObject] = [
+            0: [
+                0: true,
+                1: false,
+                2: false
+            ],
+            1: [
+                0: true,
+                1: false,
+                2: false
+            ],
+            2: [
+                0:false
+            ],
+            3: [Int:Bool]()
+        ]
+        return filterStates
+    }
+    
+    private func getSortFilters() -> Int {
+        return sortIndex
+    }
+    
+    private func getRadius() -> Int {
+        var radius = [483, 1609, 8047, 32187]
+        return radius[radiusIndex]
+    }
+    
+    private func getDeals() -> Bool {
+        var dic = switchStates[2] as! [Int:Bool]
+        return dic[0]!
+    }
+    
+    private func getCategoriesFilters() -> [String] {
         var results = [String]()
-        for (row, isSelected) in switchStates {
+        let dic = switchStates[3] as! [Int:Bool]
+        for (row, isSelected) in dic {
             if isSelected {
                 results.append(categories![row]["code"]!)
             }
@@ -74,7 +166,15 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
         return results
     }
     
-    func getCategories() -> [[String:String]] {
+    private func getCategoriesNames() -> [String] {
+        var result = [String]()
+        for category in categories! {
+            result.append(category["name"]!)
+        }
+        return result
+    }
+    
+    private func getCategories() -> [[String:String]] {
         let categories:[[String:String]] = [["name" : "Afghan", "code": "afghani"],
             ["name" : "African", "code": "african"],
             ["name" : "American, New", "code": "newamerican"],
