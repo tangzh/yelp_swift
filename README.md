@@ -31,6 +31,6 @@ Time spent: 8h
 
 ### Walkthrough
 
-![Video Walkthrough](...)
+![Video Walkthrough](yelp_swift.gif)
 
 
