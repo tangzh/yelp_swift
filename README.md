@@ -26,11 +26,11 @@ Time spent: 8h
    - [ ] Implement map view of restaurant results
 - [ ] Filter page
    - [ ] Radius filter should expand as in the real Yelp app
-   - [ ] Categories should show a subset of the full list with a "See All" row to expand. Category list is here: http://www.yelp.com/developers/documentation/category_list (Links to an external site.)
+   - [X] Categories should show a subset of the full list with a "See All" row to expand. Category list is here: http://www.yelp.com/developers/documentation/category_list (Links to an external site.)
 - [ ] Implement the restaurant detail page.
 
 ### Walkthrough
 
-![Video Walkthrough](yelp_swift.gif)
+![Video Walkthrough](yelp_swift_.gif)
 
 
