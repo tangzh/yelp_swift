@@ -31,11 +31,6 @@ class BusinessesViewController: UIViewController, UITableViewDataSource, UITable
             self.tableView.reloadData()
         })
         
-//        Business.searchWithTerm("Restaurants", sort: YelpSortMode.Distance, categories: [], deals: true) { (businesses: [Business]!, error: NSError!) -> Void in
-//            self.businesses = businesses
-//            self.tableView.reloadData()
-//        }
-        
     }
     
     func searchBarTextDidEndEditing(searchBar: UISearchBar) {
@@ -116,7 +111,7 @@ class BusinessesViewController: UIViewController, UITableViewDataSource, UITable
         }
     }
     
-    func getSort(sortIndex: Int) -> YelpSortMode {
+    private func getSort(sortIndex: Int) -> YelpSortMode {
         switch sortIndex{
         case 0: return YelpSortMode.BestMatched
         case 1: return YelpSortMode.Distance
